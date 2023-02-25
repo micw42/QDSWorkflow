@@ -1,3 +1,4 @@
+#' @export
 BulkPreproc = function(df, cell_thresh=2, count_thresh=0.5) {
   if (all(row.names(df)==seq(1, nrow(df)))) {
     gene_col = colnames(df)[1]
@@ -8,6 +9,7 @@ BulkPreproc = function(df, cell_thresh=2, count_thresh=0.5) {
   return(df)
 }
 
+#' @export
 scPreproc = function(df, prop=0.002, 
                      nUMI_filt=500, nGene_filt=250, log10_filt=0.75, 
                      mito_filt=0.2, variable.features=10000) {

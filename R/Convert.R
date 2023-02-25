@@ -9,3 +9,16 @@ convertSymbol = function(df, gene_map, conv_col="converted_alias", init_col="ini
   return(df)
 }
 
+convertSpecies = function(df, hm, old_id, new_id) {
+  if (all(row.names(df)==seq(1, nrow(df)))) {
+    gene_col = colnames(df)[1]
+    df = df %>% distinct(!!sym(gene_col), .keep_all=T) %>%
+      column_to_rownames(var=gene_col)
+  }
+  cols = colnames(hm)
+  conf = cols[which(grepl("confidence", cols))]
+  hom_type = cols[which(grepl("type", cols))]
+  df = convert_species(df, hm=hm, hom_type=hom_type, 
+                       conf=conf, old_id=old_id, new_id=new_id)
+  return(df)
+}
