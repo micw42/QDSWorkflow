@@ -24,3 +24,15 @@ scPreproc = function(df, prop=0.002,
                          variable.features=variable.features)
   return(df)
 }
+
+#' @export
+FilterDoublets = function(df, ann_df, split.by, id_col) {
+  if (all(rownames(df)==seq(1, nrow(df)))) {
+    gene_col = colnames(df)[1]
+    df = df %>% distinct(!!sym(gene_col), .keep_all=T) %>%
+      column_to_rownames(var=gene_col)
+  }
+  singlets = df %>% get_seurat_obj() %>% filter_doublets(ann_df=ann_df, split.by=split.by, byvar=id_col)
+  df = df %>% select(singlets)
+  return(df)
+}

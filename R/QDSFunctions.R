@@ -492,60 +492,65 @@ filter_doublets = function(obj, ann_df, split.by="Sample",
   obj.split <- SplitObject(obj, split.by = split.by) 
   singlet_list = list()
   for (i in 1:length(obj.split)) {
-    df = obj.split[[i]]
-    print(paste("N cells:", ncol(df)))
-    df = df %>% NormalizeData() %>%
-      FindVariableFeatures() %>%
-      ScaleData() %>%
-      RunPCA(nfeatures.print = 10, npcs=min(50, (ncol(df)-1)))
-    
-    # Find significant PCs
-    stdv <- df[["pca"]]@stdev
-    sum.stdv <- sum(df[["pca"]]@stdev)
-    percent.stdv <- (stdv / sum.stdv) * 100
-    cumulative <- cumsum(percent.stdv)
-    co1 <- which(cumulative > 90 & percent.stdv < 5)[1]
-    co2 <- sort(which((percent.stdv[1:length(percent.stdv) - 1] - 
-                         percent.stdv[2:length(percent.stdv)]) > 0.1), 
-                decreasing = T)[1] + 1
-    min.pc <- min(co1, co2)
-    
-    df <- df %>% RunUMAP(dims = 1:min.pc) %>%
-      FindNeighbors(dims = 1:min.pc, n_neighbors=min(30, (ncol(df)-1))) %>%           
-      FindClusters(resolution = 0.1)
-    
-    sweep.list <- paramSweep_v3(df, PCs = 1:min.pc, num.cores = detectCores() - 1)
-    sweep.stats <- summarizeSweep(sweep.list)
-    bcmvn <- find.pK(sweep.stats)
-    print("Done with sweep.")
-    
-    bcmvn.max <- bcmvn[which.max(bcmvn$BCmetric),]
-    optimal.pk <- bcmvn.max$pK
-    optimal.pk <- as.numeric(levels(optimal.pk))[optimal.pk]
-    print("Found optimal pk.")
-    
-    annotations <- df@meta.data$seurat_clusters
-    homotypic.prop <- modelHomotypic(annotations) 
-    nExp.poi <- round(optimal.pk * nrow(df@meta.data)) 
-    nExp.poi.adj <- round(nExp.poi * (1 - homotypic.prop))
-    print("Found nExp.poi.")
-    
-    # run DoubletFinder
-    df <- doubletFinder_v3(seu = df, 
-                           PCs = 1:min.pc, 
-                           pK = optimal.pk,
-                           nExp = nExp.poi.adj)
-    
-    meta_df = df@meta.data
-    colnames(meta_df)[grepl("DF.classification", colnames(meta_df))] = "doublet_finder"
-    singlets <- meta_df %>% filter(doublet_finder == "Singlet") %>% rownames()
-    singlet_list[[i]] = singlets
+    df = obj.split[[i]]        
+    if (ncol(df)<50) {
+      meta_df = df@meta.data
+      singlets <- meta_df %>% rownames()
+      singlet_list[[i]] = singlets
+    } else {
+      df = df %>% NormalizeData() %>%
+        FindVariableFeatures() %>%
+        ScaleData() %>%
+        RunPCA(nfeatures.print = 10, npcs=min(50, (ncol(df)-1)))
+      
+      # Find significant PCs
+      stdv <- df[["pca"]]@stdev
+      sum.stdv <- sum(df[["pca"]]@stdev)
+      percent.stdv <- (stdv / sum.stdv) * 100
+      cumulative <- cumsum(percent.stdv)
+      co1 <- which(cumulative > 90 & percent.stdv < 5)[1]
+      co2 <- sort(which((percent.stdv[1:length(percent.stdv) - 1] - 
+                           percent.stdv[2:length(percent.stdv)]) > 0.1), 
+                  decreasing = T)[1] + 1
+      min.pc <- min(co1, co2)
+      
+      df <- df %>% RunUMAP(dims = 1:min.pc, n_neighbors=min(30, (ncol(df)-1))) %>%
+        FindNeighbors(dims = 1:min.pc) %>%           
+        FindClusters(resolution = 0.1)
+      sweep.list <- paramSweep_v3(df, PCs = 1:min.pc, num.cores = detectCores() - 1)
+      sweep.stats <- summarizeSweep(sweep.list)
+      bcmvn <- find.pK(sweep.stats)
+      print("Done with sweep.")
+      
+      bcmvn.max <- bcmvn[which.max(bcmvn$BCmetric),]
+      optimal.pk <- bcmvn.max$pK
+      optimal.pk <- as.numeric(levels(optimal.pk))[optimal.pk]
+      print("Found optimal pk.")
+      
+      annotations <- df@meta.data$seurat_clusters
+      homotypic.prop <- modelHomotypic(annotations) 
+      nExp.poi <- round(optimal.pk * nrow(df@meta.data)) 
+      nExp.poi.adj <- round(nExp.poi * (1 - homotypic.prop))
+      print("Found nExp.poi.")
+      
+      # run DoubletFinder
+      df <- doubletFinder_v3(seu = df, 
+                             PCs = 1:min.pc, 
+                             pK = optimal.pk,
+                             nExp = nExp.poi.adj)
+      
+      meta_df = df@meta.data
+      colnames(meta_df)[grepl("DF.classification", colnames(meta_df))] = "doublet_finder"
+      singlets <- meta_df %>% filter(doublet_finder == "Singlet") %>% rownames()
+      singlet_list[[i]] = singlets
+    }
     
   }
   singlets <- unlist(singlet_list)
   print(paste("N singlets:", length(singlets)))
   return(singlets)
 }
+
 
 make_time_series = function(df, ann_df, grouping, sum_var,
                             byvar = "sample_id",
