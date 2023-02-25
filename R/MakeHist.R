@@ -1,3 +1,4 @@
+#' @export
 MakeHist = function(df, ann_df=NULL, mt.pattern="^MT-", grouping=NULL) {
   if (all(row.names(df)==seq(1, nrow(df)))) {
     gene_col = colnames(df)[1]

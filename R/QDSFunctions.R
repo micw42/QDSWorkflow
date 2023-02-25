@@ -3,7 +3,6 @@ rename = dplyr::rename
 reduce = purrr::reduce
 slice = dplyr::slice
 
-#' @export
 normal_deseq = function(full_df, cond_df) {
   dds <- DESeqDataSetFromMatrix(countData = full_df, colData = cond_df, design = ~ 1)
   vsd <- DESeq2::varianceStabilizingTransformation(dds)
@@ -308,7 +307,7 @@ mat_to_err = function (err_df, pos)
   return(out)
 }
 
-
+#' @export
 make_grouped_hist = function(pred_df, ann_df, grouping1, grouping2, 
                              byvar=c("sample_id"="sample_id"), title=NULL, levels=NULL) {
   pred_df = inner_join(pred_df, ann_df, by=byvar) 
@@ -389,6 +388,7 @@ wrap_box = function(df, ann_df, byvar=c("sample_id"="sample_id"), x, y, wrap, co
   return(p)
 }
 
+#' @export
 make_boxplot = function(df, ann_df, x, y="QDS", byvar=c("sample_id"="sample_id"), color=NULL, title=NULL, 
                         levels=NULL) {
   df = inner_join(df, ann_df, by=byvar) 
@@ -559,4 +559,13 @@ make_time_series = function(df, ann_df, grouping, sum_var,
     geom_point()+
     ggtitle(title)
   return(p)
+}
+
+format_cols = function(df) {
+  if (all(row.names(df)==seq(1, nrow(df)))) {
+    gene_col = colnames(df)[1]
+    df = df %>% distinct(!!sym(gene_col), .keep_all=T) %>%
+      column_to_rownames(var=gene_col)
+  }
+  return(df)
 }

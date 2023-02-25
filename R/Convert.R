@@ -1,3 +1,4 @@
+#' @export
 convertSymbol = function(df, gene_map, conv_col="converted_alias", init_col="initial_alias") {
   if (all(row.names(df)==seq(1, nrow(df)))) {
     gene_col = colnames(df)[1]
@@ -9,6 +10,7 @@ convertSymbol = function(df, gene_map, conv_col="converted_alias", init_col="ini
   return(df)
 }
 
+#' @export
 convertSpecies = function(df, hm, old_id, new_id) {
   if (all(row.names(df)==seq(1, nrow(df)))) {
     gene_col = colnames(df)[1]
