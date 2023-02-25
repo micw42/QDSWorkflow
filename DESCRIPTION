@@ -20,5 +20,7 @@ Depends:
     purrr,
     glmnet,
     optparse,
-    R (>= 2.10)
+    R (>= 2.10),
+    DoubletFinder
 LazyData: true
+Remotes: chris-mcginnis-ucsf/DoubletFinder
