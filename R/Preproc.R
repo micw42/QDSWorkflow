@@ -34,6 +34,6 @@ FilterDoublets = function(df, ann_df, split.by, id_col) {
   }
   singlets = df %>% get_seurat_obj() %>% filter_doublets(ann_df=ann_df, split.by=split.by, byvar=id_col)
   print(head(singlets))
-  df = df %>% select(singlets)
+  df = df %>% select(singlets[1:length(singlets)])
   return(df)
 }

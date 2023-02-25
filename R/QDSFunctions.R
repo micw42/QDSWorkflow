@@ -491,7 +491,7 @@ filter_doublets = function(obj, ann_df, split.by="Sample",
   obj@meta.data = meta
   obj.split <- SplitObject(obj, split.by = split.by) 
   singlet_list = list()
-  for (i in 1:3) {
+  for (i in 1:length(obj.split)) {
     df = obj.split[[i]]        
     if (ncol(df)<50) {
       meta_df = df@meta.data
