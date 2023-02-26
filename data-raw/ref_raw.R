@@ -1,3 +1,3 @@
-ref_raw = data.table::fread("../Downloads/featureCounts_REF_human_d2d16.txt") %>%
-  rename(Geneid=V1)
-usethis::use_data(ref_raw)
+ref_raw = data.table::fread("featureCounts_REF_final.txt")
+setwd("QDSWorkflow/")
+usethis::use_data(ref_raw, overwrite = T)
