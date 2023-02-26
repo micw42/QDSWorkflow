@@ -115,7 +115,7 @@ get_good_genes = function(obj, prop=0.1) {
 
 convert_species = function(full_df, hm, hom_type, conf, old_id, new_id) {
   hm = hm %>% filter(!!sym(hom_type)=="ortholog_one2one" & !!sym(conf)==1) %>%
-    select(c(old_id, new_id)) %>%
+    select(c(old_id, new_id)[1:2]) %>%
     distinct(!!sym(old_id), .keep_all=T) 		
   conv_df = full_df %>% rownames_to_column(var="Geneid") %>%
     inner_join(hm, by=c("Geneid"=old_id)) %>%
