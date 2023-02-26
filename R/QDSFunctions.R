@@ -137,7 +137,7 @@ convert_species = function(full_df, hm, hom_type, conf, old_id, new_id) {
 # convert gene symbol to ensembl ID
 convert_symbol = function(gene_map, full_df, conv_col="converted_alias", init_col="initial_alias") {
   gene_map = gene_map %>%
-    select(one_of(c(!!sym(conv_col), !!sym(init_col)))) %>%
+    select(one_of(c(conv_col, init_col))) %>%
     rename("converted_alias"=conv_col, "initial_alias"=init_col) %>%	
     filter(converted_alias!="None") %>%
     distinct(initial_alias, .keep_all=T)
