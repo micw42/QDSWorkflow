@@ -30,14 +30,16 @@ QDS = function(train_df, test_df, ann_df, y_col) {
 
 #' @export
 PrebuiltQDSModel = function(test_df) {
-  train_df = readRDS(system.file("REF_norm_final.rds", package="QDSWorkflow")) %>% format_cols()
+  train_df = readRDS(system.file("extdata", "REF_final_norm.rds", package="QDSWorkflow")) %>% format_cols()
   test_df = format_cols(test_df)
-  model = readRDS("ref_model.rds")
+  model = readRDS(system.file("extdata", "ref_model.rds", package="QDSWorkflow"))
   train_ids = colnames(train_df)
   test_ids = colnames(test_df)
   train_df = train_df %>% rownames_to_column(var="Geneid")
-  test_df = test_df %>% rownames_to_column(var="Geneid")
-  
+  test_df = test_df %>% rownames_to_column(var="Geneid") 
+  test_df = left_join(train_df, test_df, by="Geneid") %>%
+    replace(is.na(.), 0) %>%
+    select(-one_of(train_ids))
   combat_ann = data.frame(sample_id=c(train_ids, test_ids), Dataset=rep(c("train", "test"),
                                                                         times=c(length(train_ids), 
                                                                                 length(test_ids))))
