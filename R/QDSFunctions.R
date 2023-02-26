@@ -169,7 +169,7 @@ run_ComBat = function(df_list, ann, batch_col, join_by="Geneid", cov_col=NULL, m
     combat_edata = ComBat_seq(full_df, batch = batch, covar_mod = mod)
   }
   out = lapply(col_names, FUN = function(x) {
-    df = combat_edata %>% as.data.frame() %>% select(x) %>% t() %>% as.data.frame()
+    df = combat_edata %>% as.data.frame() %>% dplyr::select(x) %>% t() %>% as.data.frame()
     return(df)
   })
   return(out)
