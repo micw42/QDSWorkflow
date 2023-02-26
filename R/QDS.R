@@ -39,7 +39,7 @@ PrebuiltQDSModel = function(test_df) {
   test_df = test_df %>% rownames_to_column(var="Geneid") 
   test_df = left_join(train_df, test_df, by="Geneid") %>%
     replace(is.na(.), 0) %>%
-    select(-one_of(train_ids))
+    dplyr::select(-one_of(train_ids))
   combat_ann = data.frame(sample_id=c(train_ids, test_ids), Dataset=rep(c("train", "test"),
                                                                         times=c(length(train_ids), 
                                                                                 length(test_ids))))
