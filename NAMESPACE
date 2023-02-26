@@ -3,6 +3,7 @@
 export(BulkPreproc)
 export(FilterDoublets)
 export(MakeHist)
+export(PrebuiltQDSModel)
 export(QDS)
 export(convertSpecies)
 export(convertSymbol)
