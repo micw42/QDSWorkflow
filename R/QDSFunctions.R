@@ -139,7 +139,7 @@ convert_symbol = function(gene_map, full_df, conv_col="converted_alias", init_co
   gene_map = gene_map %>%
     select(one_of(c(conv_col, init_col)))
   gene_map = gene_map %>%
-    rename(converted_alias=conv_col, intial_alias=init_col) %>%	
+    rename_("converted_alias"=conv_col, "intial_alias"=init_col) %>%	
     filter(converted_alias!="None") %>%
     distinct(initial_alias, .keep_all=T)
   
