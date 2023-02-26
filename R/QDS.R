@@ -27,3 +27,25 @@ QDS = function(train_df, test_df, ann_df, y_col) {
     rename("QDS"="s1")
   return(pred_df)
 }
+
+#' @export
+PrebuiltQDSModel = function(test_df) {
+  train_df = readRDS(system.file("REF_norm_final.rds", package="QDSWorkflow")) %>% format_cols()
+  test_df = format_cols(test_df)
+  model = readRDS("ref_model.rds")
+  train_ids = colnames(train_df)
+  test_ids = colnames(test_df)
+  train_df = train_df %>% rownames_to_column(var="Geneid")
+  test_df = test_df %>% rownames_to_column(var="Geneid")
+  
+  combat_ann = data.frame(sample_id=c(train_ids, test_ids), Dataset=rep(c("train", "test"),
+                                                                        times=c(length(train_ids), 
+                                                                                length(test_ids))))
+  out = run_ComBat(list(train_df, test_df), ann = combat_ann, batch_col = "Dataset", ref.batch = "train")
+  test_df = out[[2]]
+  pred_df = data.frame(sample_id=rownames(test_df),
+                       pred=predict(model, newx=as.matrix(test_df),
+                                    s=model$lambda.min, type="response")) %>%
+    rename("QDS"="s1")
+  return(pred_df)
+}
