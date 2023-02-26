@@ -40,6 +40,15 @@ PrebuiltQDSModel = function(test_df) {
   test_df = left_join(train_df, test_df, by="Geneid") %>%
     replace(is.na(.), 0) %>%
     dplyr::select(-one_of(train_ids))
+  
+  feat = extract_nzc(model, lm=model$lambda.min, family="gaussian")
+  sub_df = test_df %>% slice(match(Geneid, feat)) %>% column_to_rownames(var="Geneid")
+  print(sub_df)
+  n_zero = mean(colSums((sub_df==0))/nrow(sub_df)) 
+  print(n_zero)
+  if (n_zero > 0.5) {
+    warning("Samples are missing >20% selected features on average. We recommend building a new QDS model.")
+  }
   combat_ann = data.frame(sample_id=c(train_ids, test_ids), Dataset=rep(c("train", "test"),
                                                                         times=c(length(train_ids), 
                                                                                 length(test_ids))))

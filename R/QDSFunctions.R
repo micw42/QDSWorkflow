@@ -93,6 +93,13 @@ make_hist = function(obj, metric, grouping=NULL, ann_df=NULL) {
   return(p)
 }
 
+extract_nzc <- function(fit, lm, family){
+  coefs <- coef(fit, s=lm)
+  if (family == "multinomial"){nzc <- unique(unlist(lapply(coefs, nzcs)))}
+  else(nzc <- nzcs(coefs))
+  
+  return(nzc)
+}
 
 bulk_preproc = function(df, cell_thresh=2, count_thresh=0.5) {
   good_genes = df %>% cpm_filter(cell_thresh=cell_thresh, count_thresh=count_thresh) %>% rownames()
@@ -130,7 +137,7 @@ convert_species = function(full_df, hm, hom_type, conf, old_id, new_id) {
 # convert gene symbol to ensembl ID
 convert_symbol = function(gene_map, full_df, conv_col="converted_alias", init_col="initial_alias") {
   gene_map = gene_map %>%
-    select(!!sym(conv_col), !!sym(init_col)) %>%
+    select(one_of(c(!!sym(conv_col), !!sym(init_col)))) %>%
     rename("converted_alias"=conv_col, "initial_alias"=init_col) %>%	
     filter(converted_alias!="None") %>%
     distinct(initial_alias, .keep_all=T)
@@ -174,6 +181,14 @@ run_ComBat = function(df_list, ann, batch_col, join_by="Geneid", cov_col=NULL, m
   })
   return(out)
 }
+
+nzcs <- function(coefs){
+  nzc <- coefs@Dimnames[[1]][coefs@i + 1]
+  nzc <- nzc[2:length(nzc)]
+  
+  return(nzc)
+}
+
 
 cpm_filter = function(df, cell_thresh=2, count_thresh=0.5) {
   cpm_df = cpm_norm(df)
