@@ -591,3 +591,13 @@ format_cols = function(df) {
   }
   return(df)
 }
+
+#' @export
+make_binned_hist = function(df, ann_df, group_col, byvar, x, y="QDS", bin_function="median", title=NULL) {
+  summ_df = summarise_group(df, ann_df, group_col, byvar, bin_function)
+  summ_df = inner_join(summ_df, ann_df, by=group_col) %>% distinct(!!sym(group_col), .keep_all = T)
+  p = ggplot(summ_df, aes_string(x = x, y = y)) + geom_boxplot(outlier.shape = NA) + 
+    geom_jitter(shape = 16, height = 0, width = 0.2) + 
+    ggtitle(title)
+  return(p)
+}
