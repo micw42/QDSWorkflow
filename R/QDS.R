@@ -25,7 +25,7 @@ QDS = function(train_df, test_df, ann_df, y_col) {
                        pred=predict(model, newx=as.matrix(test_df),
                                     s=model$lambda.min, type="response")) %>%
     rename("QDS"="s1")
-  return(pred_df)
+  return(model)
 }
 
 #' @export
@@ -43,11 +43,9 @@ PrebuiltQDSModel = function(test_df) {
   
   feat = extract_nzc(model, lm=model$lambda.min, family="gaussian")
   sub_df = test_df %>% slice(match(Geneid, feat)) %>% column_to_rownames(var="Geneid")
-  print(sub_df)
   n_zero = mean(colSums((sub_df==0))/nrow(sub_df)) 
-  print(n_zero)
-  if (n_zero > 0.5) {
-    warning("Samples are missing >20% selected features on average. We recommend building a new QDS model.")
+  if (n_zero > 0.6) {
+    warning("Samples are missing >60% selected features on average. We recommend building a new QDS model.")
   }
   combat_ann = data.frame(sample_id=c(train_ids, test_ids), Dataset=rep(c("train", "test"),
                                                                         times=c(length(train_ids), 

@@ -25,3 +25,7 @@ Depends:
     parallel
 LazyData: true
 Remotes: chris-mcginnis-ucsf/DoubletFinder
+Suggests: 
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr
