@@ -6,7 +6,7 @@ lc_ann = lc_ann %>%
                                      Sample_Origin=="PE" ~"pleural effusion (metastasis)",
                                      Sample_Origin=="mBrain" ~"brain (metastasis)")) %>%
   mutate(Development_Stage=factor(Development_Stage, ordered = T, levels=c("normal lung", "lung tumor (early)",
-                                                                           "lung tumor (late)", "mLN" ~"lymph node (metastasis)",
+                                                                           "lung tumor (late)", "lymph node (metastasis)",
                                                                            "pleural effusion (metastasis)", "brain (metastasis)")))
 setwd("QDSWorkflow/")
 usethis::use_data(lc_ann, overwrite = T)
