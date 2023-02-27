@@ -344,7 +344,7 @@ make_grouped_hist = function(pred_df, ann_df, grouping1, grouping2,
   
   p = ggplot(pred_df, aes(x=QDS, fill=NULL, group=!!sym(grouping2)))+
     geom_density(adjust=1.5, alpha=.4) +
-    geom_vline(data=modes_df, mapping=aes(xintercept=QDS_mod_med, color="red")) +
+    geom_vline(data=modes_df, mapping=aes(xintercept=QDS_mod_med), color="red") +
     facet_wrap(as.formula(paste("~", grouping1)), ncol=1) +
     ggtitle(title)
   return(p)
@@ -593,7 +593,10 @@ format_cols = function(df) {
 }
 
 #' @export
-make_binned_hist = function(df, ann_df, group_col, byvar, x, y="QDS", bin_function="median", title=NULL) {
+make_binned_boxplot = function(df, ann_df, group_col, x, y="QDS", byvar="sample_id", bin_function="median", title=NULL, levels=NULL) {
+  if (!is.null(levels)) {
+    ann_df[[x]] = factor(ann_df[[x]], ordered=T, levels=levels)
+  }
   summ_df = summarise_group(df, ann_df, group_col, byvar, bin_function)
   summ_df = inner_join(summ_df, ann_df, by=group_col) %>% distinct(!!sym(group_col), .keep_all = T)
   p = ggplot(summ_df, aes_string(x = x, y = y)) + geom_boxplot(outlier.shape = NA) + 
