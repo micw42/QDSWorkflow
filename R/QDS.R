@@ -1,5 +1,9 @@
 #' @export
-QDS = function(train_df, test_df, ann_df, y_col) {
+QDS = function(test_df, train_df=NULL, ann_df=NULL, y_col=NULL, prebuilt=F) {
+  if (prebuilt) {
+    pred_df = PrebuiltQDSModel(test_df)
+    return(pred_df)
+  }
   train_df = train_df %>% format_cols()
   test_df = test_df %>% format_cols()
   train_ids = colnames(train_df)
@@ -28,7 +32,7 @@ QDS = function(train_df, test_df, ann_df, y_col) {
   return(model)
 }
 
-#' @export
+
 PrebuiltQDSModel = function(test_df) {
   train_df = readRDS(system.file("extdata", "REF_final_norm.rds", package="QDSWorkflow")) %>% format_cols()
   test_df = format_cols(test_df)

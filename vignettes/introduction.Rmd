@@ -1,5 +1,5 @@
 ---
-title: "introduction"
+title: "Introduction to using QDSWorkflow package to predict quiescence depth"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{introduction}
@@ -15,30 +15,35 @@ knitr::opts_chunk$set(
 ```
 
 ```{r setup}
-library(QDSWorkflow)
+suppressPackageStartupMessages(library(QDSWorkflow))
 ```
 
-#Using pre-built model to make QDS predictions
-```{r Preprocess test data (muscle regeneration dataset)}
+# Using pre-built model to predict quiesence depth
+## Preprocess test data (muscle regeneration dataset)
+```{r}
 #data already loaded in variable musc_raw
 test_df = musc_raw %>% BulkPreproc()    #normalize
-test_df = test_df %>% convertSpecies(hm=mouse_rat_hm, old_id = "Gene stable ID", new_id = "Rat gene stable ID")
+test_df = test_df %>% convertSpecies(hm=mouse_rat_hm, old_id = "Gene stable ID", new_id = "Rat gene stable ID")  #convert to rat IDs
 ```
 
-```{r Make QDS prediction}
+## Make QDS prediction
+```{r }
 qds_df = PrebuiltQDSModel(test_df)
 ```
 
-```{r Make boxplot of predicted QDS values}
+## Make boxplot of predicted QDS values
+```{r }
 #Muscle regeneration dataset metadata already loaded in variable musc_ann
-make_boxplot(qds_df, musc_ann, "Condition", title="QDS of muscle stem cells \n under different perfusion conditions")
+make_boxplot(qds_df, musc_ann, "Condition", title="QDS of muscle stem cells \n under different \nperfusion conditions")
 ```
 
-#Building new QDS model and predicting on test data
-Download the lung cancer epithelial dataset [here](https://drive.google.com/file/d/1NhgnEEFASni6vHdG0UbEu9MokiScfhpB/view)
-```{r Preprocess test data (lung cancer epithelial dataset)}
+# Building new QDS model and predicting on test data
+## Download the lung cancer epithelial dataset [here](https://drive.google.com/file/d/1NhgnEEFASni6vHdG0UbEu9MokiScfhpB/view)
+## Preprocess test data (lung cancer epithelial dataset)
+```{r }
 #Load the data
 test_df = readRDS("../../Lung_Cancer_Epithelial_raw.rds") #Replace with correct path
+
 #Filter doublets
 #Lung cancer epithelial metadata already loaded in variable lc_ann
 test_df = test_df %>% FilterDoublets(ann_df=lc_ann, split.by="Sample", id_col="Index") 
@@ -52,37 +57,6 @@ test_df = test_df %>% scPreproc()
 test_df = test_df %>%
   convertSymbol(gene_map = lc_gene_map) %>%
   convertSpecies(hm=rat_human_hm, old_id = "Gene stable ID", new_id = "Rat gene stable ID")
-```
-
-```{r Filter and normalize the train data (REF dataset)}
-#REF raw counts table already loaded in variable ref_raw
-train_df = ref_raw %>% BulkPreproc()
-```
-
-```{r Train regression model and predict the QDS of the test data}
-#REF data annotations already loaded in variable ref_ann
-qds_df = QDS(train_df = train_df, test_df = test_df, ann_df = ref_ann, y_col = "Day")
-```
-
-```{r Make a boxplot of the QDS values of the single cells in the test data}
-#Lung cancer epithelial metadata already loaded in variable lc_ann
-make_boxplot(df = qds_df, ann_df = lc_ann, x = "Development_Stage",
-            y="QDS", byvar=c("sample_id"="Index"),title="QDS of lung cancer epithelial cells,\n
-              grouped by development stage") + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
-```
-
-```{r Make a boxplot of the binned QDS values }
-make_binned_boxplot(qds_df, lc_ann, group_col="Sample", 
-  byvar=c("sample_id"="Index"), x="Development_Stage",
-  title="QDS of lung cancer epithelial cells,\n binned by sample\n grouped by development stage")+ 
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
-```
-
-```{r Plot density curves of the QDS values}
-make_grouped_hist(qds_df, ann_df = lc_ann, grouping1 = "Development_Stage",
-        grouping2="Sample", byvar=c("sample_id"="Index"),
-        title="QDS of lung cancer epithelial cells,\n
-        grouped by development stage and sample")
 ```
 
 

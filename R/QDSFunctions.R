@@ -451,45 +451,40 @@ w_train_test = function(ann_df, grouping=c("Dataset", "Condition"), k_folds=5) {
   return(folds)
 }
 
-bin_cells = function (df, n_cells = 60, bin_function="sum") 
+bin_cells = function (df, n_bin = 10, bin_function="median", id_col="sample_id") 
 {
-  n_bin = round(nrow(df)/n_cells)
-  df$bin = sample(seq(1, n_bin), nrow(df), replace = T)
-  binned_df = df %>% group_by(bin) %>% summarise_if(is.numeric, 
-                                                    bin_function) %>% select(-bin)
+  df$bin = sample(seq(1, n_bin), nrow(df), replace = T) %>% as.character()
+  binned_df = df %>% column_to_rownames(var=id_col) %>%
+    group_by(bin) %>% 
+    summarise_if(is.numeric, bin_function) 
+  id_df = df %>% distinct(bin, .keep_all = T) %>% select(one_of(c("sample_id", "bin")))
+  binned_df = inner_join(binned_df, id_df, by="bin") %>% select(-bin) %>% relocate(!!sym(id_col))
   print("Done binning.")
   return(binned_df)
 }
 
 format_bin = function(x, group_col, n_cells, bin_function) {
   sample_origin = (x[[group_col]])[1]
-  x = x %>% bin_cells(n_cells = n_cells, bin_function=bin_function)
+  x = x %>% bin_cells(n_bin = n_bin, bin_function=bin_function)
   ids = paste(sample_origin, seq(1, nrow(x)), sep = "_")
   x = x %>% mutate(sample_id = ids)
   x[group_col] = sample_origin
   return(x)
 }
 
-bin_wrapper = function (df, ann_df, join_col, group_col, n_cells = 60, bin_function="sum",
-                        parallel=F, par_idx=NULL) 
+bin_wrapper = function (df, ann_df, group_col, join_col="sample_id", n_bin = 10, bin_function="median") 
 {
-  df_list = inner_join(df, ann_df, by = join_col) %>% group_by(!!sym(group_col)) %>% 
+  df = df %>% format_cols() %>% t() %>% as.data.frame() %>% rownames_to_column(var="sample_id")
+  df_list = inner_join(df, ann_df, by = c("sample_id"=join_col)) %>% group_by(!!sym(group_col)) %>% 
     group_split()
-  if (!parallel) {       
-    binned_df_list = lapply(df_list, FUN = function(x) {
-      x = format_bin(x, group_col, n_cells, bin_function)
-      return(x)
-    }) 
+  binned_df_list = lapply(df_list, FUN = function(x) {
+    x = x %>% bin_cells(n_bin=n_bin, bin_function=bin_function)
+    return(x)
+  }) 
     binned_df = bind_rows(binned_df_list)
-  } else {
-    x = df_list[[par_idx]]
-    binned_df = format_bin(x, group_col, n_cells, bin_function)
-  }    
-  counts = binned_df %>% select(-c(group_col)) %>% column_to_rownames(var = "sample_id") %>% 
+  counts = binned_df %>% column_to_rownames(var = "sample_id") %>% 
     t() %>% as.data.frame() %>% rownames_to_column(var = "Geneid")
-  ann_df = binned_df %>% select(c("sample_id", group_col))
-  out = setNames(list(counts, ann_df), c("counts", "ann_df"))
-  return(out)
+  return(counts)
 }
 
 summarise_group = function(df, ann_df, group_col, byvar="Index", bin_function="median") {
@@ -501,9 +496,9 @@ summarise_group = function(df, ann_df, group_col, byvar="Index", bin_function="m
 
 filter_doublets = function(obj, ann_df, split.by="Sample", 
                            byvar="Index") {
-  meta = obj@meta.data %>% rownames_to_column(var="Index") %>%
+  meta = obj@meta.data %>% rownames_to_column(var=byvar) %>%
     inner_join(ann_df, by=byvar) %>%
-    column_to_rownames(var="Index")
+    column_to_rownames(var=byvar)
   print(paste("N total:", nrow(meta)))
   obj@meta.data = meta
   obj.split <- SplitObject(obj, split.by = split.by) 

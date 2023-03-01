@@ -26,7 +26,7 @@ scPreproc = function(df, prop=0.002,
 }
 
 #' @export
-FilterDoublets = function(df, ann_df, split.by, id_col) {
+FilterDoublets = function(df, ann_df, split.by, byvar) {
   if (all(rownames(df)==seq(1, nrow(df)))) {
     gene_col = colnames(df)[1]
     df = df %>% distinct(!!sym(gene_col), .keep_all=T) %>%
