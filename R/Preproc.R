@@ -25,6 +25,15 @@ scPreproc = function(df, prop=0.002,
   return(df)
 }
 
+#' Filter doublets.
+#' This function uses the DoubletFinder package to find doublets
+#' and removes the doublets from the data table
+#' 
+#' @param df Data frame with raw counts. The rows should be genes, and columns should be samples. 
+#' @param ann_df Metadata table containing the sample each cell belongs to. The cells are grouped by sample, and the doublet-finding algorithm is run on each group separately 
+#' @param split.by Name of column in ann_df to group the cells by. It should be the column corresponding to the sample the cell was from
+#' @param id_col Name of column in ann_df containing the cell IDs
+#' @return Raw counts table with doublets filtered
 #' @export
 FilterDoublets = function(df, ann_df, split.by, byvar) {
   if (all(rownames(df)==seq(1, nrow(df)))) {

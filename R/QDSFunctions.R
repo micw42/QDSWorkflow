@@ -324,25 +324,31 @@ mat_to_err = function (err_df, pos)
 }
 
 #' @export
-make_grouped_hist = function(pred_df, ann_df, grouping1, grouping2, 
+make_grouped_hist = function(pred_df, ann_df, grouping1, xvar="QDS", grouping2=NULL, n_bin=10,
                              byvar=c("sample_id"="sample_id"), title=NULL, levels=NULL) {
   pred_df = inner_join(pred_df, ann_df, by=byvar) 
   if (!is.null(levels)) {
     pred_df[[grouping1]] = factor(pred_df[[grouping1]], ordered=T, levels=levels)
   }
+  if (is.null(grouping2)) {
+    p = ggplot(pred_df, aes(x=!!sym(xvar), group=!!sym(grouping1), color=!!sym(grouping1), fill=!!sym(grouping1)))+
+      geom_density(adjust=1.5, alpha=.4) +
+      ggtitle(title)
+    return(p)
+  }
   modes = pred_df %>% group_by(!!sym(grouping1), !!sym(grouping2)) %>%
     group_split() %>%
     lapply(FUN=function(x) {
       cond = x %>% pull(!!sym(grouping1)) %>% unique()
-      mode_idx = which.max(density(x$QDS)$y)
-      mode = density(x$QDS)$x[mode_idx]
+      mode_idx = which.max(density(x[[xvar]])$y)
+      mode = density(x[[xvar]])$x[mode_idx]
       df = data.frame(Condition=cond, QDS_mode=mode)
       colnames(df)[1] = grouping1
       return(df)
     })
   modes_df = bind_rows(modes) %>% group_by(!!sym(grouping1)) %>% summarise(QDS_mod_med=median(QDS_mode))
   
-  p = ggplot(pred_df, aes(x=QDS, fill=NULL, group=!!sym(grouping2)))+
+  p = ggplot(pred_df, aes(x=!!sym(xvar), fill=NULL, group=!!sym(grouping2)))+
     geom_density(adjust=1.5, alpha=.4) +
     geom_vline(data=modes_df, mapping=aes(xintercept=QDS_mod_med), color="red") +
     facet_wrap(as.formula(paste("~", grouping1)), ncol=1) +
