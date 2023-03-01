@@ -32,8 +32,8 @@ FilterDoublets = function(df, ann_df, split.by, byvar) {
     df = df %>% distinct(!!sym(gene_col), .keep_all=T) %>%
       column_to_rownames(var=gene_col)
   }
-  singlets = df %>% get_seurat_obj() %>% filter_doublets(ann_df=ann_df, split.by=split.by, byvar=id_col)
+  singlets = df %>% get_seurat_obj() %>% filter_doublets(ann_df=ann_df, split.by=split.by, byvar=byvar)
   print(head(singlets))
-  df = df %>% select(singlets[1:length(singlets)])
+  df = df %>% select(one_of(singlets))
   return(df)
 }
