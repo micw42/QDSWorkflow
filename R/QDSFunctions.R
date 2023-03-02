@@ -505,7 +505,6 @@ filter_doublets = function(obj, ann_df, split.by="Sample",
   meta = obj@meta.data %>% rownames_to_column(var=byvar) %>%
     inner_join(ann_df, by=byvar) %>%
     column_to_rownames(var=byvar)
-  print(paste("N total:", nrow(meta)))
   obj@meta.data = meta
   obj.split <- SplitObject(obj, split.by = split.by) 
   singlet_list = list()
@@ -538,18 +537,15 @@ filter_doublets = function(obj, ann_df, split.by="Sample",
       sweep.list <- paramSweep_v3(df, PCs = 1:min.pc, num.cores = detectCores() - 1)
       sweep.stats <- summarizeSweep(sweep.list)
       bcmvn <- find.pK(sweep.stats)
-      print("Done with sweep.")
       
       bcmvn.max <- bcmvn[which.max(bcmvn$BCmetric),]
       optimal.pk <- bcmvn.max$pK
       optimal.pk <- as.numeric(levels(optimal.pk))[optimal.pk]
-      print("Found optimal pk.")
       
       annotations <- df@meta.data$seurat_clusters
       homotypic.prop <- modelHomotypic(annotations) 
       nExp.poi <- round(optimal.pk * nrow(df@meta.data)) 
       nExp.poi.adj <- round(nExp.poi * (1 - homotypic.prop))
-      print("Found nExp.poi.")
       
       # run DoubletFinder
       df <- doubletFinder_v3(seu = df, 
