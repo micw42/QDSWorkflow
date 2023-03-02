@@ -18,10 +18,10 @@ scPreproc = function(df, prop=0.002,
     df = df %>% distinct(!!sym(gene_col), .keep_all=T) %>%
       column_to_rownames(var=gene_col)
   }
-  df = df %>% sc_preproc(prop=prop, 
+  df = invisible(sc_preproc(df, prop=prop, 
                          nUMI_filt=nUMI_filt, nGene_filt=nGene_filt, 
                          log10_filt=log10_filt, mito_filt=mito_filt, 
-                         variable.features=variable.features)
+                         variable.features=variable.features))
   return(df)
 }
 
@@ -41,7 +41,7 @@ FilterDoublets = function(df, ann_df, split.by, byvar) {
     df = df %>% distinct(!!sym(gene_col), .keep_all=T) %>%
       column_to_rownames(var=gene_col)
   }
-  singlets = df %>% get_seurat_obj() %>% filter_doublets(ann_df=ann_df, split.by=split.by, byvar=byvar)
+  singlets = df %>% get_seurat_obj() %>% filter_doublets(ann_df=ann_df, split.by=split.by, byvar=byvar) %>% invisible()
   print(head(singlets))
   df = df %>% select(one_of(singlets))
   return(df)

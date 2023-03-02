@@ -23,7 +23,7 @@ QDS = function(test_df, train_df=NULL, ann_df=NULL, y_col=NULL, prebuilt=F) {
   y = ann_df %>% 
     slice(match(train_ids, !!sym(id_col))) %>%
     pull(!!sym(y_col))
-  out = alpha_test(train_df, y, n_alphas=20)
+  out = suppressWarnings(alpha_test(train_df, y, n_alphas=20))
   model = out$opt_model
   pred_df = data.frame(sample_id=rownames(test_df),
                        pred=predict(model, newx=as.matrix(test_df),
