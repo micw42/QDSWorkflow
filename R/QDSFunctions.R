@@ -459,6 +459,7 @@ w_train_test = function(ann_df, grouping=c("Dataset", "Condition"), k_folds=5) {
 
 bin_cells = function (df, n_bin = 10, bin_function="median", id_col="sample_id") 
 {
+  print(nrow(df))
   df$bin = sample(seq(1, n_bin), nrow(df), replace = T) %>% as.character()
   print(length(unique(df$bin)))
   binned_df = df %>% column_to_rownames(var=id_col) %>%
