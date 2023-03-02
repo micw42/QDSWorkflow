@@ -2,9 +2,7 @@
 % Please edit documentation in R/Preproc.R
 \name{FilterDoublets}
 \alias{FilterDoublets}
-\title{Filter doublets.
-This function uses the DoubletFinder package to find doublets
-and removes the doublets from the data table}
+\title{Filter doublets from scRNA-seq data}
 \usage{
 FilterDoublets(df, ann_df, split.by, byvar)
 }
@@ -21,7 +19,6 @@ FilterDoublets(df, ann_df, split.by, byvar)
 Raw counts table with doublets filtered
 }
 \description{
-Filter doublets.
 This function uses the DoubletFinder package to find doublets
 and removes the doublets from the data table
 }

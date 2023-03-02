@@ -1,3 +1,13 @@
+#' Bin scRNA-seq counts
+#' 
+#' Groups the cells, partitions each group into random bins, and calculates a summary statistic for the counts in each bin.
+#' @param df Data frame of normalized, filtered counts. The rows should be genes, and columns should be samples. 
+#' @param ann_df Data frame containing the group of each cell. One column should contain cell IDs, rest of the columns should contain corresponding groups of the cell
+#' @param group_col Name of column in ann_df containing the group of each cell
+#' @param join_col Name of column in ann_df containing the cell IDs
+#' @param n_bin Number of random bins to partition in each group
+#' @param bin_function The function to use when calculating the summary statistic
+#' @return Data frame with 1st column called "Geneid" containing gene names, rest of the columns containing the summary statistic for each bin. The bins are named by a random cell ID in the bin
 #' @export
 BinCells = function (df, ann_df, group_col, join_col="sample_id", n_bin = 10, bin_function="median") 
 {

@@ -323,8 +323,21 @@ mat_to_err = function (err_df, pos)
   return(out)
 }
 
+#' Plot density curves of scRNA-seq quiescence depth predictions
+#' 
+#' Groups the test samples and plots density curves for each group. There is the option to group the density curves.
+#' 
+#' @param pred_df Data frame with quiescence depth of each sample. One column should contain the sample IDs, and the other should contain the predicted values
+#' @param ann_df Data frame with one column containing sample IDs, rest of the columns containing the corresponding group of the sample
+#' @param grouping1 The name of the column in ann_df with the group of each sample
+#' @param xvar the column in pred_df containing the predicted values
+#' @param grouping2 the name of the column in ann_df that contains the group of each density curve
+#' @param byvar Columns to use when joining df and ann_df. Example: c("df_column"="ann_column") 
+#' @param title Title of plot
+#' @param levels Vector containing the order of groups on the plot
+#' @return Density curves that show the distribution of quiescence depth in groups of single cells
 #' @export
-make_grouped_hist = function(pred_df, ann_df, grouping1, xvar="QDS", grouping2=NULL, n_bin=10,
+make_grouped_hist = function(pred_df, ann_df, grouping1, xvar="QDS", grouping2=NULL, 
                              byvar=c("sample_id"="sample_id"), title=NULL, levels=NULL) {
   pred_df = inner_join(pred_df, ann_df, by=byvar) 
   if (!is.null(levels)) {
@@ -411,6 +424,20 @@ wrap_box = function(df, ann_df, byvar=c("sample_id"="sample_id"), x, y, wrap, co
   return(p)
 }
 
+#' Make a boxplot of quiescence depth predictions
+#' 
+#' Groups the test samples and makes a boxplot of the quiescence depth values in each group. 
+#' There is the option to color the points on the boxplot
+#' 
+#' @param df Data frame with quiescence depth of each sample. One column should contain the sample IDs, and the other should contain the predicted values
+#' @param ann_df Data frame with one column containing sample IDs, rest of the columns containing the corresponding group of the sample
+#' @param x Name of column in ann_df with the group of the samples
+#' @param y Name of column in df containing the predicted quiescence depth values
+#' @param byvar Columns to use when joining df and ann_df. Example: c("df_column"="ann_column")  
+#' @param color Name of column to use when coloring the points on the boxplot
+#' @param title Title of plot
+#' @param levels Vector containing the order of groups on the plot
+#' @return Grouped boxplot of quiescence depth of test samples
 #' @export
 make_boxplot = function(df, ann_df, x, y="QDS", byvar=c("sample_id"="sample_id"), color=NULL, title=NULL, 
                         levels=NULL) {

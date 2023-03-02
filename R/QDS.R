@@ -1,3 +1,17 @@
+#' Train a model and predict quiescence depth
+#' 
+#' Merges the train and test datasets and removes batch effects between them. 
+#' Then, builds an elastic net regression model on the train data. In elastic net, the alpha parameter controls how many coefficients (genes) are in the model: 
+#' lower alpha gives models with more coefficients, higher alpha gives models with fewer coefficients. 
+#' Tests a range of alpha values and finds the cross-validation error of each one. T
+#' To capture a broader signature of quiescence depth, we use the minimum alpha with cross-validation error within 5% of the minimum error. 
+#' 
+#' @param test_df  test data (normalized counts). The rows should be genes, and columns should be samples.
+#' @param train_df  train data (normalized counts). The rows should be genes, and columns should be samples.
+#' @param ann_df data frame with train data labels. First column contains train sample IDs and 2nd column contains corresponding y values. 
+#' @param y_col Name of column in ann_df that contains y values
+#' @param prebuilt Set to TRUE if using the prebuilt rat embryonic fibroblast model to predict on the test data.  If prebuilt=TRUE, test_df is the only required argument.
+#' @return Data frame with predicted quiescence depth value for each test sample
 #' @export
 QDS = function(test_df, train_df=NULL, ann_df=NULL, y_col=NULL, prebuilt=F) {
   if (prebuilt) {

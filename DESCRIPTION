@@ -22,7 +22,8 @@ Depends:
     optparse,
     R (>= 2.10),
     DoubletFinder,
-    parallel
+    parallel,
+    gridExtra
 LazyData: true
 Remotes: chris-mcginnis-ucsf/DoubletFinder
 Suggests: 
