@@ -465,6 +465,7 @@ bin_cells = function (df, n_bin = 10, bin_function="median", id_col="sample_id")
     group_by(bin) %>% 
     summarise_if(is.numeric, bin_function) 
   id_df = df %>% distinct(bin, .keep_all = T) %>% select(one_of(c(id_col, "bin")))
+  print(id_df)
   binned_df = inner_join(binned_df, id_df, by="bin") %>% select(-bin) %>% relocate(!!sym(id_col))
   print("Done binning.")
   return(binned_df)
