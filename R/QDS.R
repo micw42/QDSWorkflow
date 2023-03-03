@@ -43,7 +43,7 @@ QDS = function(test_df, train_df=NULL, ann_df=NULL, y_col=NULL, prebuilt=F) {
                        pred=predict(model, newx=as.matrix(test_df),
                                     s=model$lambda.min, type="response")) %>%
     rename("QDS"="s1")
-  return(pred_df)
+  return(list(out, pred_df))
 }
 
 
