@@ -4,7 +4,14 @@
 \alias{QDS}
 \title{Train a model and predict quiescence depth}
 \usage{
-QDS(test_df, train_df = NULL, ann_df = NULL, y_col = NULL, prebuilt = F)
+QDS(
+  test_df,
+  train_df = NULL,
+  ann_df = NULL,
+  y_col = NULL,
+  prebuilt = F,
+  return.all = F
+)
 }
 \arguments{
 \item{test_df}{test data (normalized counts). The rows should be genes, and columns should be samples.}

@@ -13,7 +13,7 @@
 #' @param prebuilt Set to TRUE if using the prebuilt rat embryonic fibroblast model to predict on the test data.  If prebuilt=TRUE, test_df is the only required argument.
 #' @return Data frame with predicted quiescence depth value for each test sample
 #' @export
-QDS = function(test_df, train_df=NULL, ann_df=NULL, y_col=NULL, prebuilt=F) {
+QDS = function(test_df, train_df=NULL, ann_df=NULL, y_col=NULL, prebuilt=F, return.all=F) {
   if (prebuilt) {
     pred_df = PrebuiltQDSModel(test_df)
     return(pred_df)
@@ -43,7 +43,12 @@ QDS = function(test_df, train_df=NULL, ann_df=NULL, y_col=NULL, prebuilt=F) {
                        pred=predict(model, newx=as.matrix(test_df),
                                     s=model$lambda.min, type="response")) %>%
     rename("QDS"="s1")
-  return(list(out, pred_df))
+  if (return.all) {
+    return(list(out, pred_df, test_df))
+  }
+  else {
+    return(pred_df)
+  }
 }
 
 
