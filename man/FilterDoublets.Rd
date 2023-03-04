@@ -11,7 +11,7 @@ FilterDoublets(df, ann_df, split.by, byvar)
 
 \item{ann_df}{Metadata table containing the sample each cell belongs to. The cells are grouped by sample, and the doublet-finding algorithm is run on each group separately}
 
-\item{split.by}{Name of column in ann_df to group the cells by. It should be the column corresponding to the sample the cell was from}
+\item{split.by}{Name of column(s) in ann_df to use when grouping the cells. Can be a string (for one column) or vector (for multiple columns).}
 
 \item{id_col}{Name of column in ann_df containing the cell IDs}
 }
