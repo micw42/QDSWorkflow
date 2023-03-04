@@ -530,13 +530,8 @@ summarise_group = function(df, ann_df, group_col, byvar="Index", bin_function="m
   return(df)
 }
 
-filter_doublets = function(obj, ann_df, split.by="Sample", 
-                           byvar="Index") {
-  meta = obj@meta.data %>% rownames_to_column(var=byvar) %>%
-    inner_join(ann_df, by=byvar) %>%
-    column_to_rownames(var=byvar)
-  obj@meta.data = meta
-  obj.split <- SplitObject(obj, split.by = split.by) 
+filter_doublets = function(df_list) {
+  obj.split <- lapply(df_list, FUN=function(x) get_seurat_obj(x))
   singlet_list = list()
   for (i in 1:length(obj.split)) {
     df = obj.split[[i]]        
