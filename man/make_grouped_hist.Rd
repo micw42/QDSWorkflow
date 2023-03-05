@@ -24,7 +24,7 @@ make_grouped_hist(
 
 \item{xvar}{the column in pred_df containing the predicted values}
 
-\item{grouping2}{the name of the column in ann_df that contains the group of each density curve}
+\item{grouping2}{the name of the column in ann_df to use when splitting the density curves in each group}
 
 \item{byvar}{Columns to use when joining df and ann_df. Example: c("df_column"="ann_column")}
 
@@ -36,5 +36,5 @@ make_grouped_hist(
 Density curves that show the distribution of quiescence depth in groups of single cells
 }
 \description{
-Groups the test samples and plots density curves for each group. There is the option to group the density curves.
+Groups the test samples and plots density curves for each group. There is the option to plot multiple density curves for each group
 }

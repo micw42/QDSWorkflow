@@ -325,13 +325,13 @@ mat_to_err = function (err_df, pos)
 
 #' Plot density curves of scRNA-seq quiescence depth predictions
 #' 
-#' Groups the test samples and plots density curves for each group. There is the option to group the density curves.
+#' Groups the test samples and plots density curves for each group. There is the option to plot multiple density curves for each group
 #' 
 #' @param pred_df Data frame with quiescence depth of each sample. One column should contain the sample IDs, and the other should contain the predicted values
 #' @param ann_df Data frame with one column containing sample IDs, rest of the columns containing the corresponding group of the sample
 #' @param grouping1 The name of the column in ann_df with the group of each sample
 #' @param xvar the column in pred_df containing the predicted values
-#' @param grouping2 the name of the column in ann_df that contains the group of each density curve
+#' @param grouping2 the name of the column in ann_df to use when splitting the density curves in each group
 #' @param byvar Columns to use when joining df and ann_df. Example: c("df_column"="ann_column") 
 #' @param title Title of plot
 #' @param levels Vector containing the order of groups on the plot
@@ -361,7 +361,8 @@ make_grouped_hist = function(pred_df, ann_df, grouping1, xvar="QDS", grouping2=N
     })
   modes_df = bind_rows(modes) %>% group_by(!!sym(grouping1)) %>% summarise(QDS_mod_med=median(QDS_mode))
   
-  p = ggplot(pred_df, aes(x=!!sym(xvar), fill=NULL, group=!!sym(grouping2)))+
+  p = ggplot(pred_df, aes(x=!!sym(xvar), fill=NULL, group=!!sym(grouping2), color=!!sym(grouping2)))+
+    scale_color_brewer(palette="Dark2")+
     geom_density(adjust=1.5, alpha=.4) +
     geom_vline(data=modes_df, mapping=aes(xintercept=QDS_mod_med), color="red") +
     facet_wrap(as.formula(paste("~", grouping1)), ncol=1) +
