@@ -30,7 +30,7 @@ make_grouped_boxplot(
 
 \item{title}{Title of plot}
 
-\item{levels}{Vector containing the order of groups on the plot}
+\item{levels}{Vector containing the order of groups (x1) on the plot}
 }
 \value{
 Grouped boxplot of quiescence depth of test samples

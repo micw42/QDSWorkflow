@@ -651,7 +651,7 @@ bootstrap_cells = function(df, n=50, m=100) {
 #' @param y Name of column in df containing the predicted quiescence depth values
 #' @param byvar Columns to use when joining df and ann_df. Example: c("df_column"="ann_column")  
 #' @param title Title of plot
-#' @param levels Vector containing the order of groups on the plot
+#' @param levels Vector containing the order of groups (x1) on the plot
 #' @return Grouped boxplot of quiescence depth of test samples
 #' @export
 make_grouped_boxplot = function (df, ann_df, x1, x2, y = "QDS", byvar = c(sample_id = "sample_id"), 
@@ -659,7 +659,7 @@ make_grouped_boxplot = function (df, ann_df, x1, x2, y = "QDS", byvar = c(sample
 {
   df = inner_join(df, ann_df, by = byvar)
   if (!is.null(levels)) {
-    df[[x]] = factor(df[[x]], ordered = T, levels = levels)
+    df[[x1]] = factor(df[[x1]], ordered = T, levels = levels)
   }
   p = ggplot(df, aes_string(x = x1, y = y, fill = x2)) + geom_boxplot(outlier.shape = NA) + 
     ggtitle(title)
