@@ -56,7 +56,7 @@ BootstrapSamples = function(df, ann_df, group_col, join_col="sample_id", n=50, m
       bootstrap_cells(n=n, m=m)
     new_colnames = paste("bootstrap", i, seq(1, m), sep="_")
     colnames(subset) = new_colnames
-    map_rows = data.frame(new_id=new_colnames, old_id=cells)
+    map_rows = data.frame(sample_id=new_colnames, old_id=cells)
     bootstrap_df_list[[i]] = subset
     map_list[[i]] = map_rows
   }
