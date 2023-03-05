@@ -364,7 +364,7 @@ make_grouped_hist = function(pred_df, ann_df, grouping1, xvar="QDS", grouping2=N
   p = ggplot(pred_df, aes(x=!!sym(xvar), fill=NULL, group=!!sym(grouping2), color=!!sym(grouping2)))+
     scale_color_brewer(palette="Dark2")+
     geom_density(adjust=1.5, alpha=.4) +
-    geom_vline(data=modes_df, mapping=aes(xintercept=QDS_mod_med), color="red") +
+    geom_vline(data=modes_df, mapping=aes(xintercept=QDS_mod_med), color="black") +
     facet_wrap(as.formula(paste("~", grouping1)), ncol=1) +
     ggtitle(title)
   return(p)
