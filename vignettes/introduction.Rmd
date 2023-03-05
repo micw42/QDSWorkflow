@@ -1,64 +1,264 @@
 ---
 title: "Introduction to using QDSWorkflow package to predict quiescence depth"
 output: rmarkdown::html_vignette
+
 vignette: >
-  %\VignetteIndexEntry{introduction}
+  %\VignetteIndexEntry{QDSWorkflow Introduction}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
 
 ```{r, include = FALSE}
+options(width = 999)
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>"
+  comment = "#>",
+  fig.dim=c(7,5)
 )
 ```
+This vignette shows how to use the QDSWorkflow package to (1) normalize and filter raw counts; and (2) build a QDS model and predict quiescence depth. 
 
-```{r setup}
+
+
+# Example 1: Bulk RNA-seq
+## Data preprocessing
+Load the package
+
+```{r}
 suppressPackageStartupMessages(library(QDSWorkflow))
 ```
 
-# Using pre-built model to predict quiesence depth
-## Preprocess test data (muscle regeneration dataset)
+Load the training data raw counts. Here, we use a bulk RNA-seq dataset of rat embryonic fibroblasts (REF) under 2, 3, 4, 6, 8, 10, 12, 14, and 16 days of serum starvation.
+The QDSWorkflow package includes this data in the ref_raw variable
+
 ```{r}
-#data already loaded in variable musc_raw
-test_df = musc_raw %>% BulkPreproc()    #normalize
-test_df = test_df %>% convertSpecies(hm=mouse_rat_hm, old_id = "Gene stable ID", new_id = "Rat gene stable ID")  #convert to rat IDs
+train_df = ref_raw
+head(train_df)
 ```
 
-## Make QDS prediction
+Filter and normalize the training data
+```{r}
+train_df = BulkPreproc(train_df)
+head(train_df)
+```
+
+Load the test data raw counts. Here, we use bulk RNA-seq of fibroblast samples under growing, quiescent, senescent, and deep senescent conditions. 
+The QDSWorkflow package includes this data in the gqs_raw variable
+
+```{r}
+test_df = gqs_raw
+head(test_df)
+```
+
+Filter and normalize the test data
+```{r}
+test_df = BulkPreproc(test_df)
+head(test_df)
+```
+
+## ID conversion
+The training data contains rat Ensembl IDs, whereas the test data contains human Ensembl IDs.
+Convert the Ensembl IDs in the training data from rat to human using the rat-human homology table. 
+The QDSWorkflow package includes the rat-human homology table in the rat_human_hm variable
+
+Take a look at the homology table
+```{r}
+head(rat_human_hm)
+```
+Convert the IDs in the training data
+```{r}
+train_df = convertSpecies(train_df, hm=rat_human_hm, new_id="Gene stable ID", old_id="Rat gene stable ID")
+head(train_df)
+```
+Now, the gene IDs in the train and test data match. We are ready to build a model on the train data and make predictions on the test data.\
+
+## Build model, make prediction
+
+Load in the labels of the train samples.
+The QDSWorkflow package includes the labels in the ref_ann variable. \
+
+Take a look at the labels
 ```{r }
-qds_df = PrebuiltQDSModel(test_df)
+head(ref_ann)
+```
+Build a regression model using the train data and get the predicted quiescence depth values of the test data
+```{r warning=FALSE, message=FALSE}
+qds_df = QDS(train_df=train_df, test_df=test_df, ann_df=ref_ann, y_col="Day")
+qds_df
 ```
 
-## Make boxplot of predicted QDS values
+## Visualize predicted values
+Load in the labels of the test samples.
+The QDSWorkflow package includes the labels in the gqs_ann variable.
+
+Take a look at the test sample labels
 ```{r }
-#Muscle regeneration dataset metadata already loaded in variable musc_ann
-make_boxplot(qds_df, musc_ann, "Condition", title="QDS of muscle stem cells \n under different \nperfusion conditions")
+gqs_ann
 ```
 
-# Building new QDS model and predicting on test data
-## Download the lung cancer epithelial dataset [here](https://drive.google.com/file/d/1NhgnEEFASni6vHdG0UbEu9MokiScfhpB/view)
-## Preprocess test data (lung cancer epithelial dataset)
+Make a boxplot of the predicted values.
+```{r fig.height = 5, fig.width = 7}
+make_boxplot(qds_df, ann_df= gqs_ann, x="Condition", 
+    title="Quiescence depth predictions of fibroblasts in various states",
+    levels=c("growing", "quiescence", "senescence", "deep senescence"))
+```
+Note how the predicted values for senescence and deep senescence (permanent non-proliferation) are higher than those for quiescence (temporary non-proliferation). 
+
+<br>
+
+# Example 2: scRNA-seq
+## Data preprocessing
+Load, filter, and normalize the training data raw counts. Again, we use the REF dataset.
+
+```{r}
+train_df = ref_raw
+train_df = BulkPreproc(train_df)
+```
+
+Load the test data raw counts. Here, we use scRNA-seq of mouse neural stem cells (NSC) in various stages of activation.
+The QDSWorkflow package includes the raw data in the variable nsc_raw
+```{r}
+test_df = nsc_raw
+dim(test_df)
+test_df[1:10,1:10]
+```
+Load the test sample annotations. The QDSWorkflow package includes the annotations for this dataset in the variable nsc_ann. This table gives the type and age of each cell in the dataset.
+```{r}
+test_ann = nsc_ann
+head(test_ann)
+```
+
+Doublets occur when the RNA content from multiple cells are sequenced as one. Since they contain a misleadingly high number of reads, they should not be used in downstream analyses. 
+```{r}
+n_before = ncol(test_df)-1
+print(paste("Number of cells before filter:", n_before))
+```
+```{r results=F, message=F, warning=F, fig.keep="none"}
+test_df = FilterDoublets(df = test_df, ann_df = test_ann, split.by = "celltype", byvar="sample_id")
+```
+```{r}
+n_after = ncol(test_df)
+print(paste("Number of cells after filter:", n_after))
+```
+We can see that some doublets were filtered from the dataset.\
+
+
+The raw data may include dying cells and other cells of poor quality, which should not be included in downstream analysis.  They can be filtered based on QC metrics like total counts (nUMI), genes expressed (nGene), genes expressed per total counts (log10GenesPerUMI), and mitochondrial ratio (mitoRatio). Plot histograms of these metrics.
+```{r results=F, message=F, warning=F}
+plist = MakeHist(test_df, ann_df = test_ann, grouping = "celltype", mt.pattern = "^mt-")
+grid.arrange(grobs = plist, ncol = 2)
+```
+Choose threshold values for these QC metrics. Be relatively permissive; avoid filtering out cells belonging to continuous distribution curves. From the nGene histogram, we can see that there is a small outlier peak at around 800, so we use set 800 as the nGene threshold. For the rest of the QC metrics, there are no outlier peaks, so we use the default thresholds (nUMI > 500, log10GenesPerUMI > 0.75, mitoRatio < 0.2). These thresholds will allow the majority of the cells to pass.\
+
+Run scPreproc() to (1) filter the cells by the previously chosen thresholds, (2) normalize using SCTransform, and (3) filter genes that are expressed in too few cells or have low variability. We use the default gene filter settings, which keeps the top 10000 most variable genes that are expressed in more than 0.2% of the cells.
+```{r results=F, message=F, warning=F, fig.keep="none"}
+test_df = scPreproc(test_df, nGene_filt=800)
+```
+
+Take a look at the filtered, normalized test data
 ```{r }
-#Load the data
-test_df = readRDS("../../Lung_Cancer_Epithelial_raw.rds") #Replace with correct path
+dim(test_df)
+test_df[1:10, 1:10]
+```
+We can see that some cells and genes were filtered out.\
 
-#Filter doublets
-#Lung cancer epithelial metadata already loaded in variable lc_ann
-test_df = test_df %>% FilterDoublets(ann_df=lc_ann, split.by="Sample", id_col="Index") 
 
-#Filter and normalize the test data
-test_df = test_df %>% scPreproc()
+## Bootstrap sampling
+Since the test data is scRNA-seq, create bootstrap samples using the BootstrapSamples() function, which samples n cells with replacement from each group and takes the sum of their normalized counts. Bootstrapping is not required, but makes quiescence depth trends clearer. To illustrate, we will predict the quiescence depth of both single cells and bootstrapped samples.\
 
-#Convert the gene names to human Ensembl IDs, and convert the human Ensembl IDs to rat Ensembl IDs
-#gene map already loaded in variable lc_gene_map
-#rat-human homology already loaded in variable rat_human_hm
-test_df = test_df %>%
-  convertSymbol(gene_map = lc_gene_map) %>%
-  convertSpecies(hm=rat_human_hm, old_id = "Gene stable ID", new_id = "Rat gene stable ID")
+
+Here, we group the cells by cell type and age, and create 100 bootstrapped samples in each group. The BootstrapSamples() function also outputs a new annotation table, which we will use downstream when visualizing the results. 
+```{r results=F, message=F, warning=F, fig.keep="none"}
+set.seed(100)
+boot_list = BootstrapSamples(test_df, test_ann, group_col = c("celltype", "age")) 
+test_df_boot = boot_list$samples    #The counts for the bootstrap samples
+boot_ann = boot_list$ann      #The annotations for the bootstrap samples
 ```
 
+Since there are 8 total cell type/age conditions, this gives a total of 800 bootstrapped samples.
+```{r}
+dim(test_df_boot)
+```
+
+## ID conversion
+The train data contains rat Ensembl IDs, whereas the test data contains mouse gene names. Convert both to mouse Ensembl IDs.\
+
+Convert the genes in the train data from rat to mouse.
+```{r}
+train_df = convertSpecies(train_df, hm=mouse_rat_hm, 
+    new_id="Gene stable ID", old_id="Rat gene stable ID")
+head(train_df)
+```
+
+Then, convert the genes in the test data using a table that maps gene names to Ensembl IDs. The QDSWorkflow package includes this table in the variable nsc_genemap.\
 
 
+Take a look at the gene map
+```{r}
+gene_map = nsc_genemap
+head(gene_map)
+```
+Convert the single cell data
+```{r}
+test_df = convertSymbol(df = test_df, gene_map = gene_map, 
+    conv_col = "converted_alias", init_col = "initial_alias")
+test_df[1:10, 1:10]
+```
+Convert the bootstrapped data
+```{r}
+test_df_boot = convertSymbol(df = test_df_boot, gene_map = gene_map, 
+    conv_col = "converted_alias", init_col = "initial_alias")
+test_df_boot[1:10, 1:10]
+```
+
+## Build model, make prediction
+
+Like in the previous example, build a regression model using the train data and get the predicted quiescence depth values of the test data. \
+
+
+Predict the quiescence depth values of the single cell data
+```{r warning=FALSE, message=FALSE}
+qds_df = QDS(train_df=train_df, test_df=test_df, ann_df=ref_ann, y_col="Day")
+head(qds_df)
+```
+Predict the quiescence depth values of the bootstrapped data
+```{r warning=FALSE, message=FALSE}
+qds_df_boot = QDS(train_df=train_df, test_df=test_df_boot, ann_df=ref_ann, y_col="Day")
+head(qds_df_boot)
+```
+
+## Visualize predicted values
+Make boxplots of predicted quiescence depth values for single cells and bootstrapped samples. This time, we use the make_grouped_hist() function, which groups the boxplots by 2 conditions (in this case, age and cell type).
+
+```{r warning=F, fig.height = 5, fig.width = 7}
+#Single cell predictions
+p1 = make_grouped_boxplot(qds_df, ann_df = test_ann, x1 = "celltype", x2="age",
+            title="Single cell", 
+            levels=c("dormant", "primed", "activated (early)", "activated (late)")) + 
+            ylim(5, 12)+
+        theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+        
+#Bootstrap sample predictions
+p2 = make_grouped_boxplot(qds_df_boot, ann_df = boot_ann, x1 = "celltype", x2="age", 
+            title="Bootstrapped samples", 
+            levels=c("dormant", "primed", "activated (early)", "activated (late)")) + 
+            ylim(5, 12)+
+        theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+        
+grid.arrange(grobs=list(p1, p2), ncol=2, 
+                top=textGrob("Quiescence depth predictions of NSC dataset",
+                                  gp = gpar(col = "black", fontsize = 18))) 
+```
+From the boxplots, we can see that old NSCs have deeper predicted quiescence depth than young NSCs. Also, the predicted quiescence depth decreases as cells progress from dormancy to late-stage activation, which reflects the increase in proliferative signal as stem cells become activated. The single cell and bootstrapped predictions have the same trend, but the difference between groups is more apparent in the bootstrapped samples.\
+
+
+
+For the single cell predictions, plot density curves to visualize the distribution of quiescence depth more clearly.
+```{r fig.height = 5, fig.width = 7}
+make_grouped_hist(qds_df, ann_df = test_ann, grouping1 = "celltype", 
+                    xvar = "QDS", grouping2 = "age",
+                    levels=c("dormant", "primed", "activated (early)", "activated (late)"),
+                    title="Quiescence depth predictions of NSC dataset")
+```
+We can see that the old NSC curves have higher modes than the young NSC curves. The black line is the mean of the modes of the old and young curves in each plot. We can see that it is highest in dormant cells and lowest in late-stage activation cells.
 
