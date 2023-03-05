@@ -626,3 +626,16 @@ make_binned_boxplot = function(df, ann_df, group_col, x, y="QDS", byvar="sample_
     ggtitle(title)
   return(p)
 }
+
+bootstrap_cells = function(df, n=50, m=100) {
+  rows = list()
+  for (i in 1:m) {
+    idx = sample(1:nrow(df), n, replace = T)
+    new_id = rownames(df)[idx[1]]
+    boot_rows = df[idx,]
+    boot_rows = boot_rows %>% colSums()
+    rows[[i]] = boot_rows
+  }
+  boot_df = as.data.frame(rows)
+  return(boot_df)
+}
