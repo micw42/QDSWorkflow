@@ -10,7 +10,7 @@
 #' @param train_df  train data (normalized counts). The rows should be genes, and columns should be samples.
 #' @param ann_df data frame with train data labels. First column contains train sample IDs and 2nd column contains corresponding y values. 
 #' @param y_col Name of column in ann_df that contains y values
-#' @param prebuilt Set to TRUE if using the prebuilt rat embryonic fibroblast model to predict on the test data.  If prebuilt=TRUE, test_df is the only required argument.
+#' @param prebuilt Set to TRUE if using the prebuilt rat embryonic fibroblast model to predict on the test data.  If prebuilt=TRUE, provide only the test_df argument. Leave train_df, ann_df, and y_col arguments empty.
 #' @return Data frame with predicted quiescence depth value for each test sample
 #' @export
 QDS = function(test_df, train_df=NULL, ann_df=NULL, y_col=NULL, prebuilt=F, return.all=F) {

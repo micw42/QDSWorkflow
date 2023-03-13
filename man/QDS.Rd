@@ -22,7 +22,7 @@ QDS(
 
 \item{y_col}{Name of column in ann_df that contains y values}
 
-\item{prebuilt}{Set to TRUE if using the prebuilt rat embryonic fibroblast model to predict on the test data.  If prebuilt=TRUE, test_df is the only required argument.}
+\item{prebuilt}{Set to TRUE if using the prebuilt rat embryonic fibroblast model to predict on the test data.  If prebuilt=TRUE, provide only the test_df argument. Leave train_df, ann_df, and y_col arguments empty.}
 }
 \value{
 Data frame with predicted quiescence depth value for each test sample
