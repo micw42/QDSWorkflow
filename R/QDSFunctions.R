@@ -323,6 +323,11 @@ mat_to_err = function (err_df, pos)
   return(out)
 }
 
+get_modes = function(vec) {
+  mode_idx = which.max(density(vec)$y)
+  mode = density(vec)$x[mode_idx]
+  return(mode)
+}
 #' Plot density curves of scRNA-seq quiescence depth predictions
 #' 
 #' Groups the test samples and plots density curves for each group. There is the option to plot multiple density curves for each group
@@ -349,22 +354,13 @@ make_grouped_hist = function(pred_df, ann_df, grouping1, xvar="QDS", grouping2=N
       ggtitle(title)
     return(p)
   }
-  modes = pred_df %>% group_by(!!sym(grouping1), !!sym(grouping2)) %>%
-    group_split() %>%
-    lapply(FUN=function(x) {
-      cond = x %>% pull(!!sym(grouping1)) %>% unique()
-      mode_idx = which.max(density(x[[xvar]])$y)
-      mode = density(x[[xvar]])$x[mode_idx]
-      df = data.frame(Condition=cond, QDS_mode=mode)
-      colnames(df)[1] = grouping1
-      return(df)
-    })
-  modes_df = bind_rows(modes) %>% group_by(!!sym(grouping1)) %>% summarise(QDS_mod_med=median(QDS_mode))
+  modes_df = pred_df %>% group_by(!!sym(grouping1), !!sym(grouping2)) %>%
+    summarise(QDS_mode=get_modes(!!sym(xvar)))
   
   p = ggplot(pred_df, aes(x=!!sym(xvar), fill=NULL, group=!!sym(grouping2), color=!!sym(grouping2)))+
     scale_color_brewer(palette="Dark2")+
     geom_density(adjust=1.5, alpha=.4) +
-    geom_vline(data=modes_df, mapping=aes(xintercept=QDS_mod_med), color="black") +
+    geom_vline(data=modes_df, mapping=aes(xintercept=QDS_mode, color=!!sym(grouping2))) +
     facet_wrap(as.formula(paste("~", grouping1)), ncol=1) +
     ggtitle(title)
   return(p)
