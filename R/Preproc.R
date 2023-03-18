@@ -60,14 +60,14 @@ scPreproc = function(df, prop=0.002,
 #' @param id_col Name of column in ann_df containing the cell IDs
 #' @return Raw counts table with doublets filtered
 #' @export
-FilterDoublets = function(df, ann_df, split.by, byvar) {
+FilterDoublets = function(df, ann_df, split.by, id_col) {
   if (all(rownames(df)==seq(1, nrow(df)))) {
     gene_col = colnames(df)[1]
     df = df %>% distinct(!!sym(gene_col), .keep_all=T) %>%
       column_to_rownames(var=gene_col)
   }
   groups = ann_df %>% group_by(across(all_of(split.by))) %>% group_split() %>%
-    lapply(FUN=function(x) {x %>% pull(!!sym(byvar))})
+    lapply(FUN=function(x) {x %>% pull(!!sym(id_col))})
   df_list = lapply(groups, FUN=function(x) {
     df %>% select(one_of(x))
   })

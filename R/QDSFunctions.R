@@ -552,7 +552,7 @@ filter_doublets = function(df_list) {
                            percent.stdv[2:length(percent.stdv)]) > 0.1), 
                   decreasing = T)[1] + 1
       min.pc <- min(co1, co2)
-      
+      print(paste("min.pc:", min.pc))
       df <- df %>% RunUMAP(dims = 1:min.pc, n_neighbors=min(30, (ncol(df)-1))) %>%
         FindNeighbors(dims = 1:min.pc) %>%           
         FindClusters(resolution = 0.1)

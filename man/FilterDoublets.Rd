@@ -4,7 +4,7 @@
 \alias{FilterDoublets}
 \title{Filter doublets from scRNA-seq data}
 \usage{
-FilterDoublets(df, ann_df, split.by, byvar)
+FilterDoublets(df, ann_df, split.by, id_col)
 }
 \arguments{
 \item{df}{Data frame with raw counts. The rows should be genes, and columns should be samples.}
