@@ -444,7 +444,8 @@ make_boxplot = function(df, ann_df, x, y="QDS", byvar=c("sample_id"="sample_id")
   }
   p = ggplot(df, aes_string(x = x, y = y)) + 
     geom_boxplot(outlier.shape = NA) + geom_jitter(shape = 16, 
-                                                   height = 0, width = 0.2, aes_string(col=color)) + ggtitle(title)
+                                                   height = 0, width = 0.2, aes_string(col=color)) + 
+                                    ggtitle(title)
   return(p)
 }
 

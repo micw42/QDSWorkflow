@@ -141,7 +141,7 @@
 #'   \item{Rat homology type}{Homology type (one-to-one, one-to-many, many-to-many)}
 #' }
 #'
-"mouse_rat_hm"
+"rat_mouse_hm"
 
 #' Homology table for human and rat Ensembl IDs
 #'
