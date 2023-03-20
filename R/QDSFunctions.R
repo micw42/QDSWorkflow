@@ -532,7 +532,8 @@ filter_doublets = function(df_list) {
   singlet_list = list()
   for (i in 1:length(obj.split)) {
     df = obj.split[[i]]        
-    if (ncol(df)<50) {
+    if (ncol(df)<=50) {
+      warning("Skipping subgroup with <= 50 cells.")
       meta_df = df@meta.data
       singlets <- meta_df %>% rownames()
       singlet_list[[i]] = singlets
@@ -540,7 +541,7 @@ filter_doublets = function(df_list) {
       df = df %>% NormalizeData() %>%
         FindVariableFeatures() %>%
         ScaleData() %>%
-        RunPCA(nfeatures.print = 10, npcs=min(50, (ncol(df)-1)))
+        RunPCA()
       
       # Find significant PCs
       stdv <- df[["pca"]]@stdev
@@ -553,7 +554,7 @@ filter_doublets = function(df_list) {
                   decreasing = T)[1] + 1
       min.pc <- min(co1, co2)
       print(paste("min.pc:", min.pc))
-      df <- df %>% RunUMAP(dims = 1:min.pc, n_neighbors=min(30, (ncol(df)-1))) %>%
+      df <- df %>% RunUMAP(dims = 1:min.pc) %>%
         FindNeighbors(dims = 1:min.pc) %>%           
         FindClusters(resolution = 0.1)
       sweep.list <- paramSweep_v3(df, PCs = 1:min.pc, num.cores = detectCores() - 1)
