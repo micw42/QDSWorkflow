@@ -15,7 +15,7 @@ To install this package, run the following in R:
 remotes::install_github("micw42/QDSWorkflow")
 ```
 
-![Workflow chart](QDSWorkflow_chart.png)
+![Workflow chart](QDSWorkflow_panelA.png)
 
 
 
